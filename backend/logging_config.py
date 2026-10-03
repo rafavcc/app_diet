@@ -32,7 +32,7 @@ def configure_logging() -> None:
                 },
                 "uvicorn.error": {
                     "handlers" : ["console"],
-                    "level": "INFO",
+                    "level": "DEBUG",
                     "propagate": False
                 },
             }

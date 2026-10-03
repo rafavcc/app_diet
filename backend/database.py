@@ -21,11 +21,15 @@ SessionLocal = sessionmaker(autoflush=False, bind=engine)
 class Base(DeclarativeBase):
     pass
 
+def init_db() -> None:
+    import models
+    Base.metadata.create_all(bind=engine)
+
 def get_db():
     with SessionLocal() as db:
         yield db
 
-DBSession = Annotated[Session, Depends(get_db)]
+DbSession = Annotated[Session, Depends(get_db)]
 
 def ping() -> bool:
     try:

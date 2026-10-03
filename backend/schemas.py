@@ -86,7 +86,7 @@ class FoodEntryOut(FoodEntryBase):
     model_config = ConfigDict(from_attributes=True)
 
 # ——————————————————————————————————————————
-# Food entry schemas
+# Macro schemas
 # ——————————————————————————————————————————
 
 class MacroSummary(BaseModel):
@@ -95,11 +95,11 @@ class MacroSummary(BaseModel):
     fats : float = Field(default=0.0, ge=0, description="Total grams of fats")
     total_calories : float = Field(default=0.0, ge=0, description="Total calories")
 
-class FoodEntrywithMacros(FoodEntryOut):
+class FoodEntryWithMacros(FoodEntryOut):
     macros: MacroSummary
 
 class DailySummaryOut(BaseModel):
-    date = dt.date
+    date : dt.date
     by_meal_type: dict[str, MacroSummary]
     totals : MacroSummary
     entry_count : int = 0
@@ -123,13 +123,13 @@ class CopyDayIn(BaseModel):
     meal_types: list[MealType] | None = None
     replace: bool = False
 
-    @model.validator(mode="after")
+    @model_validator(mode="after")
     def check_dates_differ(self) -> Self:
         if self.source_date == self.target_date:
             raise ValueError("Source and target dates must differ.")
         return self
 
-class CopyDatOut(BaseModel):
+class CopyDayOut(BaseModel):
     source_date : dt.date
     target_date : dt.date
     replaced : int = 0

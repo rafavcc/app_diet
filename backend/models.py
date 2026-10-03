@@ -2,12 +2,11 @@ import enum
 import datetime as dt
 
 from sqlalchemy import (
-    Boolean, Column, DateTime, Enum, Float, ForeignKey, Integer, Sprint,
+    Boolean, Column, DateTime, Enum, Float, ForeignKey, Integer, String,
     CheckConstraint
 )
 
 from sqlalchemy.orm import relationship, mapped_column, Mapped
-from database import datetime
 from database import Base
 
 from sqlalchemy import (
@@ -35,10 +34,10 @@ class Food(Base):
 
     id: Mapped[int] = mapped_column(primary_key = True)
     name: Mapped[str] = mapped_column(String(100), unique = True, index = True)
-    carb_per_100g : Mapped[float] = mapped_column(default=0.0, server_default=0)
-    prot_per_100g : Mapped[float] = mapped_column(default=0.0, server_default=0)
-    fats_per_100g : Mapped[float] = mapped_column(default=0.0, server_default=0)
-    is_favourite: Mapped[bool] = mapped_column(default=False, server_default=0)
+    carb_per_100g : Mapped[float] = mapped_column(default=0.0, server_default="0")
+    prot_per_100g : Mapped[float] = mapped_column(default=0.0, server_default="0")
+    fats_per_100g : Mapped[float] = mapped_column(default=0.0, server_default="0")
+    is_favourite: Mapped[bool] = mapped_column(default=False, server_default="0")
     entries: Mapped[list["FoodEntry"]] = relationship(back_populates="food", passive_deletes=True)
 
     __table_args__ = (
@@ -50,7 +49,8 @@ class Food(Base):
 
 class FoodEntry(Base):
     """One food eaten at a given time"""
-    __table_name__ = "food_entruy"
+    __tablename__ = "food_entry"
+    __table_args__ = (CheckConstraint("grams > 0", name="ck_food_entry_grams_positive"),)
     
     grams: Mapped[float]
     id: Mapped[int] = mapped_column(primary_key=True)

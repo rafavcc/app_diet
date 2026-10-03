@@ -23,7 +23,7 @@ def create_food(food: FoodCreate, db: DbSession):
     food = Food(**food.model_dump())
     db.add(food)
     _commit(db)
-    db.refresh()
+    db.refresh(food)
     return food
 
 @router.get("", response_model=list[FoodOut])
@@ -32,7 +32,7 @@ def list_foods(
         name : str | None = None,
         favourites_only: bool = False,
         sort : Literal["name", "carbs", "protein", " fats"] = "name",
-        limit: Annotated[int, Query(ge=1, le=settings.max_limit)] = settings.default_page_size,
+        limit: Annotated[int, Query(ge=1, le=settings.max_page_size)] = settings.default_page_size,
         offset: Annotated[int, Query(ge=0)] = 0
 ):
     stmt = select(Food)
@@ -105,7 +105,7 @@ def set_favourite(db: DbSession, food_id: int, body: FavouriteUpdate):
     db.refresh(food)
     return food
 
-@router.delete("/food_id", status_code=204)
+@router.delete("/{food_id}", status_code=204)
 def delete_food(db: DbSession, food_id : int, force : bool = False):
     food = db.get(Food, food_id)
     if food is None:
