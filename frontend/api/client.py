@@ -164,7 +164,7 @@ def get_foods(
         params["favourites_only"] = True
     return [_food_for_ui(food) for food in _request("GET", "/foods", params=params)]
 
-def get_recent_foods(limit: int = 8) -> list:
+def get_recent_foods(limit: int = 10) -> list:
     return [_food_for_ui(food) for food in _request("GET", "/foods/recent", params={"limit": limit})]
 
 def create_food(data: dict) -> dict:

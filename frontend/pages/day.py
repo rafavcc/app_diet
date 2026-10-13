@@ -18,10 +18,15 @@ from widgets.feedback import confirm_dialog, guard, notify_success, notify_warni
 
 
 def day_page(layout) -> None:
-    cache = {"foods": [], "food_names": {}, "summary": None, "entries": [], "editing": None}
+    cache = {"foods": [], "recent_foods": [], "food_names": {}, "summary": None, "entries": [], "editing": None}
 
     async def reload_all() -> None:
         await load_entries()
+        async with guard("load recent foods") as ok:
+            cache["recent_foods"] = await call(client.get_recent_foods, 10)
+        if not ok[0]:
+            cache["recent_foods"] = []
+        quick_add.refresh()
         hero.refresh()
         meals_list.refresh()
         summary_panel.refresh()
@@ -68,7 +73,7 @@ def day_page(layout) -> None:
         # --- Quick add ---
         @ui.refreshable
         def quick_add() -> None:
-            shortcuts = cache["foods"][:10]
+            shortcuts = cache["recent_foods"]
             if not shortcuts:
                 return
             section_title("Quick add", "bolt")
@@ -227,7 +232,9 @@ def day_page(layout) -> None:
                             "data": [
                                 {
                                     "name": label,
-                                    "value": round(totals.get(field, 0), 1),
+                                    "value": round(
+                                        totals.get(field, 0) * (9 if key == "fats" else 4), 1
+                                    ),
                                     "itemStyle": {"color": MACRO_COLORS[key]},
                                 }
                                 for key, label, field, _ in theme.MACRO_META
@@ -236,10 +243,19 @@ def day_page(layout) -> None:
                     }).classes("w-full h-64")
 
                 with ui.card().classes("app-card flex-1 min-w-72 p-2"):
-                    labels = [meal_meta(key)["label"] for key in by_meal]
+                    ordered_meals = [
+                        (key, by_meal[key]) for key in theme.MEAL_TYPES if key in by_meal
+                    ]
+                    labels = [meal_meta(key)["label"] for key, _ in ordered_meals]
                     ui.echart({
                         **base,
-                        "xAxis": {"type": "category", "data": labels, **axis},
+                        "grid": {**base["grid"], "bottom": 64},
+                        "xAxis": {
+                            "type": "category",
+                            "data": labels,
+                            **axis,
+                            "axisLabel": {**axis["axisLabel"], "interval": 0, "rotate": 30},
+                        },
                         "yAxis": {"type": "value", **axis},
                         "series": [
                             {
@@ -248,7 +264,8 @@ def day_page(layout) -> None:
                                 "stack": "total",
                                 "itemStyle": {"color": MACRO_COLORS[key]},
                                 "data": [
-                                    round(value.get(field, 0), 1) for value in by_meal.values()
+                                    round(value.get(field, 0), 1)
+                                    for _, value in ordered_meals
                                 ],
                             }
                             for key, label, field, _ in theme.MACRO_META
@@ -419,7 +436,6 @@ def day_page(layout) -> None:
                 ordered.append(food)
         cache["foods"] = ordered
         cache["food_names"] = {f["id"]: f for f in ordered}
-        quick_add.refresh()
         await reload_all()
 
     ui.timer(0.05, bootstrap, once=True)

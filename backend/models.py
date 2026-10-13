@@ -22,7 +22,7 @@ from sqlalchemy import (
 )
 
 class MealType(enum.Enum):
-    Breakfast = "break"
+    Breakfast = "breakfast"
     Morning_Snack = "morning_snack"
     Lunch = "lunch"
     Afternoon_Snack = "afternoon_snack"

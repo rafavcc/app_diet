@@ -25,7 +25,7 @@ def macros_for(food, grams: float | None) -> dict:
         "carb_g" : round(carb,2),
         "prot_g" : round(prot,2),
         "fats_g" : round(fats,2),
-        "calories" : round(carb * KCAL_PER_G_CARB + prot + KCAL_PER_G_PROT + fats * KCAL_PER_G_FATS)
+        "calories" : round(carb * KCAL_PER_G_CARB + prot * KCAL_PER_G_PROT + fats * KCAL_PER_G_FATS)
     }
 
 def add_macros(left: dict, right: dict) -> dict:

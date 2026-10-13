@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Query, HTTPException, Response
@@ -49,14 +50,14 @@ def list_foods(
     }
     return db.scalars(stmt.order_by(order_columns[sort]).offset(offset).limit(limit)).all()
 
-@router.get(" /recent", response_model=list[FoodOut])
-def recent_foods(db: DbSession, limit: Annotated[int, Query(ge=1, le=50)] = 8):
-    """Distinct foods ordered by the most recent entry date, limited to the specified number of results, for the quick add strip"""
-    
+@router.get("/recent", response_model=list[FoodOut])
+def recent_foods(db: DbSession, limit: Annotated[int, Query(ge=1, le=50)] = 10):
+    """Distinct foods from entries in the last 10 days, newest first."""
     last_eaten = (
         select(FoodEntry.food_id, func.max(FoodEntry.datetime).label("last_at"))
+        .where(FoodEntry.datetime >= datetime.now() - timedelta(days=10))
         .group_by(FoodEntry.food_id)
-        .subquery
+        .subquery()
     )
     stmt = (
         select(Food)

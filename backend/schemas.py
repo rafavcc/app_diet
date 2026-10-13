@@ -92,8 +92,8 @@ class FoodEntryOut(FoodEntryBase):
 class MacroSummary(BaseModel):
     carb_g : float = Field(default=0.0, ge=0, description="Total grams of carbohydrates")
     prot_g : float = Field(default=0.0, ge=0, description="Total grams of protein")
-    fats : float = Field(default=0.0, ge=0, description="Total grams of fats")
-    total_calories : float = Field(default=0.0, ge=0, description="Total calories")
+    fats_g : float = Field(default=0.0, ge=0, description="Total grams of fats")
+    calories : float = Field(default=0.0, ge=0, description="Total calories")
 
 class FoodEntryWithMacros(FoodEntryOut):
     macros: MacroSummary
